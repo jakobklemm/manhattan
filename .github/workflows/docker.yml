@@ -2,7 +2,7 @@ name: build
 
 on: 
   push: 
-    brancehs: [ master]
+    branches: [ master ]
 
 env: 
   REGISTRY: ghcr.io
