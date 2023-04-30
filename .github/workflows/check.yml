@@ -47,7 +47,7 @@ jobs:
       - name: Install hack
         uses: taiki-e/install-action@cargo-hack
       - name: cargo hack
-        run: cargo hack --features-powerset check
+        run: cargo hack --feature-powerset check
 
 
 

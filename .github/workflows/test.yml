@@ -20,7 +20,7 @@ jobs:
         with:
           toolchain: ${{ matrix.toolchain }}
       - name: cargo test
-        run: cargo test -all-features --all-targets
+        run: cargo test --all-features --all-targets
   minimal:
     runs-on: ubuntu-latest
     name: ubuntu / minimal-versions
