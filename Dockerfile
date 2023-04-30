@@ -2,6 +2,6 @@ FROM rust:slim
 
 COPY ./ ./
 
-RUN docker build --release
+RUN cargo build --release
 
 CMD ["./target/release/manhattan"]
