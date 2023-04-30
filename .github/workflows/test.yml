@@ -6,7 +6,7 @@ name: test
 jobs:
   required:
     runs-on: ubuntu-latest
-    name: ubuntu / ${{ amtrix.toolchain }}
+    name: ubuntu / ${{ matrix.toolchain }}
     strategy: 
       matrix:
         toolchain: [stable, beta, nightly]
