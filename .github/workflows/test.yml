@@ -36,7 +36,7 @@ jobs:
       - name: rustup default stable
         run: rustup default stable
       - name: cargo update minimal
-        run: cargo +nightly udpate -Zminimal-versions
+        run: cargo +nightly update -Zminimal-versions
       - name: cargo test
         run: cargo test --all-features --all-targets
   os-check:
