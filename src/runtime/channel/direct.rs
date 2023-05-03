@@ -1,7 +1,7 @@
 //! # Direct Channel Communication
 
-use crossbeam_channel::{unbounded, Receiver, Sender};
 use super::executor::Executor;
+use crossbeam_channel::{unbounded, Receiver, Sender};
 
 pub struct Connector<State: Sync, T: Send> {
     sender: Sender<(usize, T)>,
@@ -17,25 +17,26 @@ impl<S: Sync, T: Send + Sync + 'static> Connector<S, T> {
         let c1 = Connector {
             sender: s1,
             receiver: r2.clone(),
-            executor: Executor::new(st1), 
+            executor: Executor::new(st1),
             counter: 0,
         };
         let c2 = Connector {
-            sender: s2, 
+            sender: s2,
             receiver: r1.clone(),
-            executor: Executor::new(st2), 
+            executor: Executor::new(st2),
             counter: 0,
         };
         (c1, c2)
     }
 
-    pub fn call<F>(&mut self, message: T, f: F) -> anyhow::Result<()> 
-        where F: Fn(&S, &T) -> anyhow::Result<usize> + 'static
+    pub fn call<F>(&mut self, message: T, f: F) -> anyhow::Result<()>
+    where
+        F: Fn(&S, &T) -> anyhow::Result<usize> + 'static,
     {
         let id = self.counter;
         self.counter += 1;
-        let _ = self.sender.send((id, message))?; 
-        self.executor.add(f, id, 1); 
+        let _ = self.sender.send((id, message))?;
+        self.executor.add(f, id, 1);
         Ok(())
     }
 
@@ -47,4 +48,3 @@ impl<S: Sync, T: Send + Sync + 'static> Connector<S, T> {
         Ok(msg)
     }
 }
-

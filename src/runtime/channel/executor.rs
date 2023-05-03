@@ -1,4 +1,4 @@
-//! # Executor 
+//! # Executor
 
 use std::{collections::HashMap, fmt::Display};
 
@@ -15,21 +15,22 @@ impl Display for Error {
 
 pub struct Executor<State: Sync, R> {
     state: State,
-    active: HashMap<usize, (Box<dyn Fn(&State, &R) -> anyhow::Result<usize>>, usize)>
+    active: HashMap<usize, (Box<dyn Fn(&State, &R) -> anyhow::Result<usize>>, usize)>,
 }
 
 impl<S: Sync, R> Executor<S, R> {
     pub fn new(state: S) -> Self {
         Self {
             active: HashMap::new(),
-            state
+            state,
         }
     }
 
-    pub fn add<F>(&mut self, f: F, mid: usize, c: usize) 
-        where F: Fn(&S, &R) -> anyhow::Result<usize> + 'static 
+    pub fn add<F>(&mut self, f: F, mid: usize, c: usize)
+    where
+        F: Fn(&S, &R) -> anyhow::Result<usize> + 'static,
     {
-       self.active.insert(mid, (Box::new(f), c)); 
+        self.active.insert(mid, (Box::new(f), c));
     }
 
     pub fn handle(&mut self, id: usize, message: &R) -> Result<(), Error> {
@@ -37,15 +38,15 @@ impl<S: Sync, R> Executor<S, R> {
             match (f)(&self.state, message) {
                 Ok(count) => {
                     *c = count;
-                    return Ok(())
+                    return Ok(());
                 }
                 Err(..) => {
                     *c = 0;
-                    return Err(Error {})
+                    return Err(Error {});
                 }
             }
         } else {
-            return Err(Error {})
+            return Err(Error {});
         }
     }
 }
