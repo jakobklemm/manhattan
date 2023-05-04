@@ -84,10 +84,10 @@ mod tests {
         let mut state1 = 0;
         let mut state2 = 42;
 
-        let _ = c1.call(Message::Request, |ref mut state, message| {
+        let _ = c1.call(Message::Request, |state, message| {
             match message {
                 Message::Request => {}
-                Message::Send(i) => **state = i,
+                Message::Send(i) => *state = i,
             }
             Ok(0)
         });
