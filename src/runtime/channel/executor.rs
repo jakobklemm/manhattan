@@ -3,16 +3,20 @@
 use crate::Error;
 use std::collections::HashMap;
 
-pub struct Executor<State, R> {
-    pub state: State,
-    active: HashMap<usize, (Box<dyn FnMut(&mut State, R) -> anyhow::Result<usize>>, usize)>,
+pub struct Executor<R, State> {
+    active: HashMap<
+        usize,
+        (
+            Box<dyn FnMut(&mut State, R) -> anyhow::Result<usize>>,
+            usize,
+        ),
+    >,
 }
 
-impl<S, R> Executor<S, R> {
-    pub fn new(state: S) -> Self {
+impl<R, S> Executor<R, S> {
+    pub fn new() -> Self {
         Self {
             active: HashMap::new(),
-            state,
         }
     }
 
@@ -23,9 +27,9 @@ impl<S, R> Executor<S, R> {
         self.active.insert(mid, (Box::new(f), c));
     }
 
-    pub fn handle(&mut self, id: usize, message: R) -> Result<(), Error> {
+    pub fn handle(&mut self, s: &mut S, id: usize, message: R) -> Result<(), Error> {
         if let Some((f, c)) = self.active.get_mut(&id) {
-            match (f)(&mut self.state, message) {
+            match (f)(s, message) {
                 Ok(count) => {
                     *c = count;
                     return Ok(());
