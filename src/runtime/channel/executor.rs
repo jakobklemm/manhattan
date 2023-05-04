@@ -4,13 +4,7 @@ use crate::Error;
 use std::collections::HashMap;
 
 pub struct Executor<R, State> {
-    active: HashMap<
-        usize,
-        (
-            Box<dyn FnMut(&mut State, R) -> anyhow::Result<usize>>,
-            usize,
-        ),
-    >,
+    active: HashMap<usize, (Box<dyn FnMut(&mut State, R) -> Result<usize, Error>>, usize)>,
 }
 
 impl<R, S> Executor<R, S> {
@@ -22,7 +16,7 @@ impl<R, S> Executor<R, S> {
 
     pub fn add<F>(&mut self, f: F, mid: usize, c: usize)
     where
-        F: FnMut(&mut S, R) -> anyhow::Result<usize> + 'static,
+        F: FnMut(&mut S, R) -> Result<usize, Error> + 'static,
     {
         self.active.insert(mid, (Box::new(f), c));
     }

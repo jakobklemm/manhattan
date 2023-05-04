@@ -2,31 +2,36 @@
 
 use super::executor::Executor;
 use crate::Error;
-use crossbeam_channel::{unbounded, Receiver, Sender};
+use std::fmt::Debug;
+use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 pub struct Connector<S, T> {
-    sender: Sender<Event<T>>,
-    receiver: Receiver<Event<T>>,
+    sender: UnboundedSender<Event<T>>,
+    receiver: UnboundedReceiver<Event<T>>,
     pub executor: Executor<T, S>,
     counter: usize,
 }
 
+#[derive(Debug)]
 pub enum Event<T> {
     Message(usize, T),
     Reply(usize, T),
 }
 
-impl<S, T: Send + Sync + 'static> Connector<S, T> {
+impl<S, T> Connector<S, T>
+where
+    T: Send + Sync + Debug + 'static,
+{
     pub fn new() -> (Self, Self) {
-        let (s1, r1): (Sender<Event<T>>, Receiver<Event<T>>) = unbounded();
-        let (s2, r2): (Sender<Event<T>>, Receiver<Event<T>>) = unbounded();
-        let c1 = Connector {
+        let (s1, r1) = unbounded_channel();
+        let (s2, r2) = unbounded_channel();
+        let c1: Self = Connector {
             sender: s1,
             receiver: r2,
             executor: Executor::new(),
             counter: 0,
         };
-        let c2 = Connector {
+        let c2: Self = Connector {
             sender: s2,
             receiver: r1,
             executor: Executor::new(),
@@ -36,9 +41,9 @@ impl<S, T: Send + Sync + 'static> Connector<S, T> {
         (c1, c2)
     }
 
-    pub fn call<F>(&mut self, message: T, f: F) -> anyhow::Result<()>
+    pub fn call<F>(&mut self, message: T, f: F) -> Result<(), Error>
     where
-        F: FnMut(&mut S, T) -> anyhow::Result<usize> + 'static,
+        F: FnMut(&mut S, T) -> Result<usize, Error> + 'static,
     {
         let id = self.counter;
         self.counter += 1;
@@ -47,14 +52,14 @@ impl<S, T: Send + Sync + 'static> Connector<S, T> {
         Ok(())
     }
 
-    pub fn reply(&mut self, id: usize, message: T) -> anyhow::Result<()> {
+    pub fn reply(&mut self, id: usize, message: T) -> Result<(), Error> {
         let _ = self.sender.send(Event::Reply(id, message))?;
         Ok(())
     }
 
-    pub fn receive(&mut self, state: &mut S) -> anyhow::Result<(usize, T)> {
+    pub fn receive(&mut self, state: &mut S) -> Result<(usize, T), Error> {
         let Ok(msg) = self.receiver.try_recv() else {
-            return Err(anyhow::Error::new(Error::default()));
+            return Err(Error::default());
         };
 
         match msg {

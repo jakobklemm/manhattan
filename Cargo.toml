@@ -8,6 +8,5 @@ authors = [ "Jakob Klemm <jakob@jeykey.net>" ]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.71"
 clap = { version = "4.2.5", features = ["derive"] }
-crossbeam-channel = "0.5.8"
+tokio = { version = "1.28.0", features = ["sync"] }
