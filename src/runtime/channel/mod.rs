@@ -1,3 +1,3 @@
 pub mod direct;
-// mod dynamic;
+pub mod channel;
 pub mod executor;
