@@ -19,7 +19,7 @@ pub enum Error {
     /// Default variant for unspecified errors
     Unknown(String),
     /// Channel failed
-    Channel(String)
+    Channel(String),
 }
 
 impl Default for Error {
@@ -35,8 +35,7 @@ impl Display for Error {
     }
 }
 
-impl std::error::Error for Error {
-}
+impl std::error::Error for Error {}
 
 impl<T: Debug> From<SendError<T>> for Error {
     fn from(value: SendError<T>) -> Self {

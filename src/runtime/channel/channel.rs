@@ -3,7 +3,7 @@
 //! (Probably) very bad sinlge producer single consumer channel.
 //!
 
-use std::sync::atomic::AtomicUsize; 
+use std::sync::atomic::AtomicUsize;
 
 pub struct Sender<T> {
     inner: Inner<T>,
