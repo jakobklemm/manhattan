@@ -1,10 +1,8 @@
-mod arguments;
 mod error;
 pub mod runtime;
 
 use std::fmt::Display;
 
-pub use arguments::Arguments;
 pub use error::Error;
 
 /// Test + Error => TError
