@@ -96,8 +96,9 @@ mod tests {
         let ab = ActorB {};
 
         let pa = lr.register(aa).unwrap();
-        let _pb = lr.register(ab).unwrap();
+        let pb = lr.register(ab).unwrap();
 
-        assert_eq!(lr.remove(&pa).unwrap(), EID::default());
+        assert_eq!(lr.remove(&pa).unwrap(), EID(0));
+        assert_eq!(lr.remove(&pb).unwrap(), EID(1));
     }
 }
