@@ -56,7 +56,7 @@ use rand::prelude::*;
 impl PID {
     fn new() -> Self {
         let mut rng = rand::thread_rng();
-        let id: usize = rng.gen(); 
+        let id: usize = rng.gen();
         PID(id)
     }
 }
@@ -97,7 +97,7 @@ mod tests {
 
         let pa = lr.register(aa).unwrap();
         let _pb = lr.register(ab).unwrap();
-        
+
         assert_eq!(lr.remove(&pa).unwrap(), EID::default());
     }
 }

@@ -11,7 +11,7 @@ authors = [ "Jakob Klemm <jakob@jeykey.net>" ]
 flume = "0.10.14"
 tokio = { version = "1.28.0", features = ["sync"] }
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = "0.3.17"
 async-trait = "0.1.68"
 rand = "0.8.5"
 
