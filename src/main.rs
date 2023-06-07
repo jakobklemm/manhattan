@@ -1,7 +1,12 @@
 use manhattan::Error;
 
+use tracing::info;
+use tracing_subscriber;
+
 fn main() -> Result<(), Error> {
-    println!("Hello, world!");
+    tracing_subscriber::fmt::init();
+
+    info!("Hello, world!");
 
     Ok(())
 }
