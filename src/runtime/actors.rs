@@ -1,15 +1,14 @@
 //! # Actors
 
 use crate::Error;
-use async_trait::async_trait;
+// TODO: Async
+// use async_trait::async_trait;
 
-#[async_trait]
 pub trait Actor {
-    async fn retire(&self) -> Result<(), Error>;
-    async fn source(&self) -> Result<(), Error>;
+    fn retire(&self) -> Result<(), Error>;
+    fn source(&self) -> Result<(), Error>;
 }
 
-#[async_trait]
 pub trait Handle<T> {
-    async fn handle(message: T) -> Result<(), Error>;
+    fn handle(message: T) -> Result<(), Error>;
 }

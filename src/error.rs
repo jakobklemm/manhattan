@@ -1,6 +1,9 @@
 //! # Error
 
-use std::fmt::{self, Debug, Display, Formatter};
+use std::{
+    fmt::{self, Debug, Display, Formatter},
+    sync::{MutexGuard, PoisonError},
+};
 use tokio::sync::mpsc::error::SendError;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -20,6 +23,8 @@ pub enum Error {
     Unknown(String),
     /// Channel failed
     Channel(String),
+    /// Concurrency issue
+    Concurrency(String),
 }
 
 impl Default for Error {
@@ -39,6 +44,12 @@ impl std::error::Error for Error {}
 
 impl<T: Debug> From<SendError<T>> for Error {
     fn from(value: SendError<T>) -> Self {
-        Self::Channel(format!("tokio channel send failed: {:?}", value))
+        Self::Channel(format!("channel send failed: {:?}", value))
+    }
+}
+
+impl<T> From<PoisonError<MutexGuard<'_, T>>> for Error {
+    fn from(value: PoisonError<MutexGuard<T>>) -> Self {
+        Self::Concurrency(format!("locking failed: {:?}", value))
     }
 }

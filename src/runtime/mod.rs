@@ -1,11 +1,11 @@
 use self::actors::Actor;
-use crate::Error;
+use crate::{system::eid::EID, Error};
 
-use async_trait::async_trait;
+// TODO: Make async
+// use async_trait::async_trait;
 
 pub mod actors;
 pub mod channel;
-pub mod pid;
 
 pub struct Runtime<R>
 where
@@ -27,9 +27,11 @@ where
     }
 }
 
-#[async_trait]
-pub trait Registry {
+pub trait Registry: Sync {
     type PID;
 
-    async fn register(actor: impl Actor) -> Self::PID;
+    // actor dependent pid maybe
+    fn register(&self, actor: impl Actor) -> Result<Self::PID, Error>;
+    fn lookup(&self, pid: &Self::PID) -> Option<EID>;
+    fn remove(&self, pid: &Self::PID) -> Option<EID>;
 }
