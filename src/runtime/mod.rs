@@ -31,7 +31,7 @@ pub trait Registry: Sync {
     type PID;
 
     // actor dependent pid maybe
-    fn register(&self, actor: impl Actor) -> Result<Self::PID, Error>;
-    fn lookup(&self, pid: &Self::PID) -> Option<EID>;
-    fn remove(&self, pid: &Self::PID) -> Option<EID>;
+    async fn register(&self, actor: impl Actor) -> Result<Self::PID, Error>;
+    async fn lookup(&self, pid: &Self::PID) -> Option<EID>;
+    async fn remove(&self, pid: &Self::PID) -> Option<EID>;
 }
