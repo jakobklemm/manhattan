@@ -1,10 +1,12 @@
-name: audit
-
 on: 
   push:
-    paths: 
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
+    branches:
+      - 'master'
+      - 'crashey'
+      - 'crashey-*'
+  pull_request:
+
+name: security
 
 jobs:
   security_audit:

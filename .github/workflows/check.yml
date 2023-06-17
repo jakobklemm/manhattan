@@ -1,8 +1,13 @@
 on: 
   push:
-    branches: [ master, crashey ]
+    branches:
+      - 'master'
+      - 'crashey'
+      - 'crashey-*'
   pull_request:
+
 name: check
+
 jobs:
   required:
     runs-on: ubuntu-latest
@@ -13,9 +18,10 @@ jobs:
         with:
           submodules: true
       - name: Install stable 
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@nightly
       - name: cargo fmt -check
         run: cargo fmt --check
+
   clippy:
     runs-on: ubuntu-latest
     name: stable / clippy
@@ -34,6 +40,7 @@ jobs:
         uses: actions-rs/clippy@master
         with:
           args: --all-features --all-targets
+
   features:
     runs-on: ubuntu-latest
     name: ubuntu / stable / features
@@ -43,11 +50,8 @@ jobs:
         with:
           submodules: true
       - name: Install stable 
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@nightly
       - name: Install hack
         uses: taiki-e/install-action@cargo-hack
       - name: cargo hack
         run: cargo hack --feature-powerset check
-
-
-
