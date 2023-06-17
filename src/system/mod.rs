@@ -1,3 +1,0 @@
-//! # System
-
-pub mod eid;

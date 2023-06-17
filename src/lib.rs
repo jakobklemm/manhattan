@@ -1,15 +1,5 @@
 #![feature(async_fn_in_trait)]
 
-mod error;
-pub mod runtime;
-
-pub mod util;
-
-mod store;
-mod system;
-
-pub use error::Error;
-
 trait State {}
 
 trait Actor {}
@@ -43,19 +33,16 @@ enum TMessage {
 }
 
 impl Handle<TMessage> for TActor {
-    async fn handle(&self, message: TMessage, state: Box<dyn State>, context: Context) {
+    async fn handle(&self, message: TMessage, _state: Box<dyn State>, context: Context) {
         match message {
             TMessage::Ping => {
-                context.sender.send(Box::new(TMessage::Pong));
+                let _ = context.sender.send(Box::new(TMessage::Pong));
             }
-            _ => {}
+            TMessage::Pong => {
+                let _ = context.sender.send(Box::new(TMessage::Ping));
+            }
         }
     }
 }
 
-struct SystemMessage {
-    id: String,
-    message: Box<dyn Message>,
-}
-
-use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::mpsc::Sender;
