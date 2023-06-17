@@ -1,9 +1,5 @@
 on: 
   push:
-    branches:
-      - 'master'
-      - 'crashey'
-      - 'crashey-*'
   pull_request:
 
 name: test
