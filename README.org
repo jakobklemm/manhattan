@@ -1,0 +1,3 @@
+#+TITLE: Manhattan
+
+[[https:https://codecov.io/gh/jakobklemm/manhattan/branch/crashey-mvp/graph/badge.svg]]

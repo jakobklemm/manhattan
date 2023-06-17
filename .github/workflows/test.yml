@@ -9,7 +9,7 @@ jobs:
     name: ubuntu / ${{ matrix.toolchain }}
     strategy: 
       matrix:
-        toolchain: [stable, beta, nightly]
+        toolchain: [nightly]
     steps:
       - name: Checkout  
         uses: actions/checkout@v3
@@ -29,19 +29,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Install stable
-        uses: dtolnay/rust-toolchain@stable
       - name: Install nightly
         uses: dtolnay/rust-toolchain@nightly
-      - name: rustup default stable
-        run: rustup default stable
+      - name: rustup default nightly
+        run: rustup default nightly
       - name: cargo update minimal
         run: cargo +nightly update -Zminimal-versions
       - name: cargo test
         run: cargo test --all-features --all-targets
   os-check:
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} / stable
+    name: ${{ matrix.os }} / nightly
     strategy:
       fail-fast: false
       matrix:
@@ -51,8 +49,8 @@ jobs:
         uses: actions/checkout@v3
         with: 
           submodules: true
-      - name: Install stable
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install nightly
+        uses: dtolnay/rust-toolchain@nightly
       - name: cargo test
         run: cargo test --all-features --all-targets
          
