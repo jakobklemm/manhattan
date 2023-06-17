@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   codecov:
     steps:
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env: CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - uses: actions/checkout@master
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
