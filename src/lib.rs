@@ -1,5 +1,9 @@
 #![feature(async_fn_in_trait)]
 
+mod router;
+
+pub use router::Router;
+
 trait State {}
 
 trait Actor {}
