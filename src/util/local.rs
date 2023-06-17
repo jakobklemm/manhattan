@@ -17,7 +17,7 @@ impl LocalRegistry {
 impl Registry for LocalRegistry {
     type PID = PID;
 
-    async fn register(&self, _actor: impl Actor) -> Result<Self::PID, Error> { 
+    async fn register(&self, _actor: impl Actor) -> Result<Self::PID, Error> {
         // TODO: System get Entity ID
         // TODO: Use actor?
         let eid = EID::default();
