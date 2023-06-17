@@ -3,6 +3,8 @@ name: coverage
 on: [push, pull_request]
   
 jobs:
-  - name: Codecov
-    uses: codecov/codecov-action@v3
-      env: CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  codecov:
+    steps:
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env: CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
