@@ -31,6 +31,7 @@ jobs:
       - uses: qRoC/cargo-actions@v1
         with:
           command: clippy
+          toolchain: nightly
           args: --all-features --all-targets -- -D warnings
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -40,5 +41,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: qRoC/cargo-actions@v1
+        toolchain: nightly
         with:
           command: audit
