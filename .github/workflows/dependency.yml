@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'crashey-*'
+  pull_request:
 
 permissions:
   contents: read
