@@ -5,16 +5,18 @@ on:
     branches:
       - 'main'
       - 'crashey-*'
-  pull_request:
+    paths: 
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
 
 permissions:
   contents: read
 
 jobs:
-  dependency-review:
+  security_audit:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout Repository"
-        uses: actions/checkout@v3
-      - name: "Dependency Review"
-        uses: actions/dependency-review-action@v3
+      - uses: actions/checkout@v1
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
