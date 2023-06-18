@@ -1,0 +1,22 @@
+#+TITLE: Messages
+
+Description of message formats to be used in the router. 
+
+#+begin_src plantuml :file messages.png
+  title Messages
+  !theme cyborg-outline
+
+  participant "Source Actor" as A1
+  participant "Router Task" as Router
+  participant "Destination Actor" as A2
+
+  A1 --> Router : Event::Message(ID, Box<dyn Message>)
+  Router --> A2 : Event::Message(ID, Box<dyn Message>)
+
+  A2 --> Router : Event::Reply(ID, Box<dyn Message>)
+  Router --> A1 : Event::Reply(ID, Box<dyn Message>)
+
+#+end_src
+
+#+RESULTS:
+[[file:messages.png]]

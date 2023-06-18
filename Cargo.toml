@@ -6,6 +6,7 @@ license-file = "LICENSE.md"
 authors = [ "Jakob Klemm <jakob@jeykey.net>" ]
 
 [dependencies]
+dashmap = "5.4.0"
 serde = { version = "1.0.164", features = ["derive"] }
 tokio = { version = "1", features = ["sync", "macros", "rt"] }
 tracing = "0.1"
