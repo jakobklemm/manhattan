@@ -6,18 +6,45 @@ use std::fmt::Debug;
 use super::ID;
 
 /// TODO: Change u64 to identity type.
-pub trait Message: Debug + Send {
-    fn source(&self) -> u64;
-    fn destination(&self) -> u64;
-}
+pub trait Message: Debug + Send {}
 
 pub type MsgImpl = Box<dyn Message>;
 
 #[derive(Debug)]
 pub enum Event {
-    Message(ID, MsgImpl),
-    Reply(ID, MsgImpl),
+    Message(Metadata, MsgImpl),
+    Reply(Metadata, MsgImpl),
     System(SystemEvent),
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct Metadata {
+    id: ID,
+    source: u64,
+    destination: u64,
+}
+
+impl Metadata {
+    pub(crate) fn new(local: u64, remote: u64, message: u64) -> Self {
+        let id = ID::new(local, message);
+        Self {
+            id,
+            source: local,
+            destination: remote,
+        }
+    }
+
+    fn source(&self) -> u64 {
+        self.source
+    }
+
+    fn destination(&self) -> u64 {
+        self.destination
+    }
+
+    fn identification(&self) -> ID {
+        self.id
+    }
 }
 
 #[derive(Debug)]
@@ -26,8 +53,8 @@ pub enum SystemEvent {
 }
 
 impl Event {
-    pub(crate) fn new(id: ID, msg: MsgImpl) -> Self {
-        Self::Message(id, msg)
+    pub(crate) fn new(meta: Metadata, msg: MsgImpl) -> Self {
+        Self::Message(meta, msg)
     }
 
     pub(crate) fn shutdown() -> Self {
@@ -36,11 +63,11 @@ impl Event {
 
     pub(crate) fn reply(&self, data: MsgImpl) -> Self {
         match self {
-            Self::Message(id, _msg) => {
+            Self::Message(meta, _msg) => {
                 // TODO: Maybe using &mut self?
-                Self::Reply(*id, data)
+                Self::Reply(*meta, data)
             }
-            Self::Reply(_id, _msg) => {
+            Self::Reply(_, _) => {
                 // TODO: Change default or add error type
                 Self::System(SystemEvent::Shutdown)
             }
@@ -51,26 +78,34 @@ impl Event {
         }
     }
 
+    pub(crate) fn body(&self) -> Option<&MsgImpl> {
+        match self {
+            Self::Message(_meta, msg) => Some(msg),
+            Self::Reply(_meta, msg) => Some(msg),
+            Self::System(_) => None,
+        }
+    }
+
     pub(crate) fn source(&self) -> u64 {
         match self {
-            Self::Message(_id, msg) => msg.source(),
-            Self::Reply(_id, msg) => msg.source(),
+            Self::Message(meta, _msg) => meta.source(),
+            Self::Reply(meta, _msg) => meta.source(),
             Self::System(_) => 0,
         }
     }
 
     pub(crate) fn destination(&self) -> u64 {
         match self {
-            Self::Message(_id, msg) => msg.destination(),
-            Self::Reply(_id, msg) => msg.destination(),
+            Self::Message(meta, _msg) => meta.destination(),
+            Self::Reply(meta, _msg) => meta.destination(),
             Self::System(_) => 0,
         }
     }
 
-    pub(crate) fn id(&self) -> ID {
+    pub(crate) fn identification(&self) -> ID {
         match self {
-            Self::Message(id, _msg) => *id,
-            Self::Reply(id, _msg) => *id,
+            Self::Message(id, _msg) => id.identification(),
+            Self::Reply(id, _msg) => id.identification(),
             Self::System(_) => ID::default(),
         }
     }
@@ -90,14 +125,6 @@ impl Event {
             Self::System(_) => true,
         }
     }
-
-    pub(crate) fn is_reply(&self) -> bool {
-        match self {
-            Self::Message(_id, _msg) => false,
-            Self::Reply(_id, _msg) => true,
-            Self::System(_) => false,
-        }
-    }
 }
 
 #[cfg(test)]
@@ -106,22 +133,14 @@ mod tests {
 
     #[derive(Debug)]
     struct Msg {}
-    impl Message for Msg {
-        fn source(&self) -> u64 {
-            0
-        }
-
-        fn destination(&self) -> u64 {
-            1
-        }
-    }
+    impl Message for Msg {}
 
     #[test]
     fn test_create_event_simple() {
-        let id = ID::new(1, 1);
-        let e = Event::new(id, Box::new(Msg {}));
+        let meta = Metadata::new(1, 2, 0);
+        let e = Event::new(meta, Box::new(Msg {}));
 
-        assert_eq!(e.source(), 0);
-        assert_eq!(e.destination(), 1);
+        assert_eq!(e.source(), 1);
+        assert_eq!(e.destination(), 2);
     }
 }

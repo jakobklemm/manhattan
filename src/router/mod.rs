@@ -12,7 +12,7 @@ use tokio::{
 use dashmap::DashMap;
 
 mod message;
-pub use message::{Event, Message};
+pub use message::{Event, Message, Metadata};
 
 mod id;
 pub use id::ID;
@@ -22,7 +22,6 @@ pub struct Router {
     queue: VecDeque<Event>,
     receiver: Receiver<Event>,
     active: Arc<DashMap<u64, Sender<Event>>>,
-    pending: HashMap<u64, u64>,
 }
 
 impl Router {
@@ -32,7 +31,6 @@ impl Router {
             queue: VecDeque::new(),
             receiver,
             active,
-            pending: HashMap::new(),
         }
     }
 
@@ -46,14 +44,12 @@ impl Router {
                         if event.is_system() {
                             return;
                         }
-                        let mut dest = 0;
+                        let dest;
                         if event.is_message() {
                             dest = event.destination();
                         } else {
                             dest = event.source();
                         }
-                        let id = event.id();
-                        let dest = event.destination();
                         if let Some(sndr) = router.active.get(&dest) {
                             // TODO: Handle send error
                             let _ = sndr.send(event).await;
@@ -76,21 +72,9 @@ mod tests {
     use super::*;
 
     #[derive(Debug)]
-    struct Msg {
-        source: u64,
-        destination: u64,
-        data: u64,
-    }
+    struct Msg(u64);
 
-    impl Message for Msg {
-        fn source(&self) -> u64 {
-            self.source
-        }
-
-        fn destination(&self) -> u64 {
-            self.destination
-        }
-    }
+    impl Message for Msg {}
 
     #[test]
     fn test_router_create() {
@@ -116,15 +100,8 @@ mod tests {
         let _ = a.insert(2, s_b);
 
         // Send from "1" to "2"
-        let source = ID::new(1, 1);
-        let message = Event::new(
-            source,
-            Box::new(Msg {
-                source: 1,
-                destination: 2,
-                data: 42,
-            }),
-        );
+        let meta_a = Metadata::new(1, 2, 0);
+        let message = Event::new(meta_a, Box::new(Msg(42)));
         let _ = tx.send(message).await;
 
         // Receive at "2"
@@ -133,16 +110,17 @@ mod tests {
         assert_eq!(received.destination(), 2);
         assert!(received.is_message());
 
-        let reply = received.reply(Box::new(Msg {
-            source: 2,
-            destination: 1,
-            data: 43,
-        }));
+        // let body = received.body().unwrap();
+        let reply = received.reply(Box::new(Msg(43)));
         let _ = tx.send(reply).await;
 
         // Receive at "1"
         let completed = r_a.recv().await.unwrap();
         assert!(!completed.is_message());
+
+        if let Event::Reply(_, msg) = completed {
+            assert_eq!(format!("{:?}", msg), format!("{:?}", Msg(43)))
+        }
 
         let term = Event::shutdown();
         let _ = tx.send(term).await;
