@@ -17,15 +17,15 @@ pub use message::{Event, Message, Metadata};
 mod id;
 pub use id::ID;
 
-pub struct Router {
+pub struct Router<T: Message> {
     counter: u64,
-    queue: VecDeque<Event>,
-    receiver: Receiver<Event>,
-    active: Arc<DashMap<u64, Sender<Event>>>,
+    queue: VecDeque<Event<T>>,
+    receiver: Receiver<Event<T>>,
+    active: Arc<DashMap<u64, Sender<Event<T>>>>,
 }
 
-impl Router {
-    pub fn new(receiver: Receiver<Event>, active: Arc<DashMap<u64, Sender<Event>>>) -> Self {
+impl<T: Message> Router<T> {
+    pub fn new(receiver: Receiver<Event<T>>, active: Arc<DashMap<u64, Sender<Event<T>>>>) -> Self {
         Self {
             counter: 0,
             queue: VecDeque::new(),
@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn test_router_create() {
         // TODO: channel buffer size
-        let (_tx, rx) = mpsc::channel(42);
+        let (_tx, rx) = mpsc::channel::<Event<Msg>>(42);
         let active = Arc::new(DashMap::new());
         let r = Router::new(rx, active);
         assert_eq!(r.size(), 0);
@@ -101,7 +101,7 @@ mod tests {
 
         // Send from "1" to "2"
         let meta_a = Metadata::new(1, 2, 0);
-        let message = Event::new(meta_a, Box::new(Msg(42)));
+        let message = Event::new(meta_a, Msg(42));
         let _ = tx.send(message).await;
 
         // Receive at "2"
@@ -111,7 +111,7 @@ mod tests {
         assert!(received.is_message());
 
         // let body = received.body().unwrap();
-        let reply = received.reply(Box::new(Msg(43)));
+        let reply = received.reply(Msg(43));
         let _ = tx.send(reply).await;
 
         // Receive at "1"

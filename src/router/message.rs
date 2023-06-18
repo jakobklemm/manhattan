@@ -5,15 +5,12 @@ use std::fmt::Debug;
 
 use super::ID;
 
-/// TODO: Change u64 to identity type.
-pub trait Message: Debug + Send {}
-
-pub type MsgImpl = Box<dyn Message>;
+pub trait Message: Debug + Send + 'static {}
 
 #[derive(Debug)]
-pub enum Event {
-    Message(Metadata, MsgImpl),
-    Reply(Metadata, MsgImpl),
+pub enum Event<T: Message> {
+    Message(Metadata, T),
+    Reply(Metadata, T),
     System(SystemEvent),
 }
 
@@ -52,8 +49,8 @@ pub enum SystemEvent {
     Shutdown,
 }
 
-impl Event {
-    pub(crate) fn new(meta: Metadata, msg: MsgImpl) -> Self {
+impl<T: Message> Event<T> {
+    pub(crate) fn new(meta: Metadata, msg: T) -> Self {
         Self::Message(meta, msg)
     }
 
@@ -61,7 +58,7 @@ impl Event {
         Self::System(SystemEvent::Shutdown)
     }
 
-    pub(crate) fn reply(&self, data: MsgImpl) -> Self {
+    pub(crate) fn reply(&self, data: T) -> Self {
         match self {
             Self::Message(meta, _msg) => {
                 // TODO: Maybe using &mut self?
@@ -78,7 +75,7 @@ impl Event {
         }
     }
 
-    pub(crate) fn body(&self) -> Option<&MsgImpl> {
+    pub(crate) fn body(&self) -> Option<&T> {
         match self {
             Self::Message(_meta, msg) => Some(msg),
             Self::Reply(_meta, msg) => Some(msg),
@@ -138,7 +135,7 @@ mod tests {
     #[test]
     fn test_create_event_simple() {
         let meta = Metadata::new(1, 2, 0);
-        let e = Event::new(meta, Box::new(Msg {}));
+        let e = Event::new(meta, Msg {});
 
         assert_eq!(e.source(), 1);
         assert_eq!(e.destination(), 2);
