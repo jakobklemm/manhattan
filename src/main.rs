@@ -1,51 +1,50 @@
-use std::{any::Any, sync::mpsc::channel};
+use actix::prelude::*;
 
-pub trait Handle<M> {
-    fn handle(message: M);
+// this is our Message
+// we have to define the response type (rtype)
+#[derive(Message)]
+#[rtype(result = "usize")]
+struct Sum(usize, usize);
+
+// Actor definition
+struct Calculator;
+
+impl Actor for Calculator {
+    type Context = Context<Self>;
 }
 
-pub struct Actor {}
-pub struct Message {}
-pub struct Action {}
+// now we need to implement `Handler` on `Calculator` for the `Sum` message.
+impl Handler<Sum> for Calculator {
+    type Result = usize; // <- Message response type
 
-impl Handle<Message> for Actor {
-    fn handle(_message: Message) {
-        println!("Handled message");
+    fn handle(&mut self, msg: Sum, _ctx: &mut Context<Self>) -> Self::Result {
+        println!("SUM Handler recv.");
+        msg.0 + msg.1
     }
 }
 
-impl Handle<Action> for Actor {
-    fn handle(_message: Action) {
-        println!("Handled action");
+#[derive(Message)]
+#[rtype(result = "usize")]
+struct MsgMsg(String);
+
+impl Handler<MsgMsg> for Calculator {
+    type Result = usize;
+
+    fn handle(&mut self, msg: MsgMsg, ctx: &mut Self::Context) -> Self::Result {
+        println!("HANDLE Message recv: {:?}", msg.0);
+        0
     }
 }
 
-pub struct Envelope {
-    inner: Box<dyn Any>,
-}
+#[actix::main]
+async fn main() {
+    let addr = Calculator.start();
+    let res = addr.send(Sum(10, 5)).await; // <- send message and get future for result
 
-impl Envelope {
-    fn new(msg: Box<dyn Any>) -> Self {
-        Self { inner: msg }
+    match res {
+        Ok(result) => println!("SUM: {}", result),
+        _ => println!("Communication to the actor has failed"),
     }
 
-    fn inner<M>(&self) -> Option<M> {
-        match self.inner.downcast() {
-            Ok(inr) => Some(*inr),
-            Err(_) => None,
-        }
-    }
-}
-
-fn main() {
-    println!("test");
-    let actor = Actor {};
-    let (sender, receiver) = channel();
-    let msg = Envelope::new(Box::new(Message {}));
-    let _ = sender.send(msg);
-
-    // receiver side
-    let back = receiver.recv().unwrap();
-    let typed = back.inner().unwrap();
-    Actor::handle(typed);
+    let _r2 = addr.send(MsgMsg(String::from("test test test"))).await;
 }
